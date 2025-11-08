@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydro - Your Hydration Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --secondary: #06B6D4;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --dark: #0F172A;
+            --light: #F8FAFC;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.3), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-header {
+            text-align: center;
+            padding: 30px 20px 20px;
+            margin-bottom: 30px;
+        }
+
+        .app-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            padding: 15px 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: fadeInDown 0.6s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .app-logo i {
+            font-size: 2.5rem;
+            color: #60A5FA;
+            filter: drop-shadow(0 2px 8px rgba(96, 165, 250, 0.5));
+        }
+
+        .app-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin: 0;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease;
+            animation-fill-mode: both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-display {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .date-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .water-circle {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(6, 182, 212, 0.4));
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4),
+                inset 0 0 30px rgba(255, 255, 255, 0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .water-count {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+        }
+
+        .water-label {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .add-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .add-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.5);
+        }
+
+        .add-button:active {
+            transform: scale(0.95);
+        }
+
+        .progress-section {
+            margin-top: 30px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .progress-percentage {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .custom-progress {
+            height: 14px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .custom-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #06B6D4);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 16px 20px;
+            border-radius: 14px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .btn-import {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            color: var(--dark);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-wrapper {
+            width: 100%;
+            height: 280px;
+            position: relative;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            gap: 4px;
+            position: relative;
+        }
+
+        .bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            position: relative;
+        }
+
+        .bar-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+            padding-bottom: 25px;
+        }
+
+        .bar {
+            width: 80%;
+            max-width: 50px;
+            background: linear-gradient(180deg, #3B82F6, #06B6D4);
+            border-radius: 6px 6px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+            transform: scaleX(1.05);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: 0;
+            font-size: 0.75rem;
+            color: #64748B;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .calendar-title {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.1);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 10px 5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .calendar-day.today {
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.has-data {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.6), rgba(6, 182, 212, 0.6));
+        }
+
+        .calendar-day.goal-reached {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.7), rgba(239, 68, 68, 0.7));
+        }
+
+        .calendar-day-number {
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .calendar-day-glasses {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            max-width: 420px;
+            animation: slideInRight 0.4s ease;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.success {
+            border-left-color: #10B981;
+        }
+
+        .toast.error {
+            border-left-color: #EF4444;
+        }
+
+        .toast.warning {
+            border-left-color: #F59E0B;
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .toast.success .toast-icon {
+            color: #10B981;
+        }
+
+        .toast.error .toast-icon {
+            color: #EF4444;
+        }
+
+        .toast.warning .toast-icon {
+            color: #F59E0B;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+        }
+
+        .toast-message {
+            color: #64748B;
+            font-size: 0.85rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            background: white;
+            border-radius: 24px;
+            max-width: 520px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            animation: modalSlideUp 0.4s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 28px 32px;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            border-radius: 24px 24px 0 0;
+            color: white;
+        }
+
+        .modal-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+        }
+
+        .modal-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 28px 32px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .confirm-modal .modal {
+            max-width: 450px;
+        }
+
+        .confirm-modal .modal-body {
+            text-align: center;
+            padding: 32px;
+        }
+
+        .confirm-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .confirm-icon.warning {
+            color: #F59E0B;
+        }
+
+        .confirm-icon.danger {
+            color: #EF4444;
+        }
+
+        .confirm-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .confirm-message {
+            color: #64748B;
+            font-size: 1rem;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .confirm-btn {
+            padding: 12px 28px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #F1F5F9;
+            color: #64748B;
+        }
+
+        .entry-item {
+            background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .entry-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .entry-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .entry-details {
+            flex: 1;
+        }
+
+        .entry-time {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .entry-ago {
+            color: #64748B;
+            font-size: 0.85rem;
+        }
+
+        .delete-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94A3B8;
+        }
+
+        .empty-state i {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 1.6rem;
+            }
+
+            .water-circle {
+                width: 170px;
+                height: 170px;
+            }
+
+            .water-count {
+                font-size: 3.5rem;
+            }
+
+            .add-button {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.6rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: calc(100vw - 40px);
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .bar {
+                max-width: 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .glass-card {
+                padding: 20px;
+            }
+
+            .modal {
+                max-width: 100%;
+                border-radius: 20px;
+            }
+
+            .modal-header {
+                padding: 24px;
+            }
+
+            .modal-body {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="modal-overlay" id="entryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <div>
+                        <div class="modal-title" id="modalTitle">Day Details</div>
+                        <div class="modal-subtitle" id="modalSubtitle"></div>
+                    </div>
+                    <button class="modal-close" onclick="closeEntryModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay confirm-modal" id="confirmModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <div class="modal-title">Confirmation</div>
+                    <button class="modal-close" onclick="closeConfirmModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon" id="confirmIcon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+                <div class="confirm-message" id="confirmMessage">This action cannot be undone.</div>
+                <div class="confirm-buttons">
+                    <button class="confirm-btn btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+                    <button class="confirm-btn btn-confirm" id="confirmButton">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="app-header">
+            <div class="app-logo">
+                <i class="fas fa-tint"></i>
+                <h1 class="app-title">Hydro</h1>
+            </div>
+        </div>
+
+        <div class="glass-card" style="animation-delay: 0.1s;">
+            <div class="main-display">
+                <div class="date-badge" id="dateDisplay"></div>
+                <div class="water-circle">
+                    <div style="text-align: center;">
+                        <div class="water-count" id="waterCount">0</div>
+                        <div class="water-label">glasses</div>
+                    </div>
+                </div>
+                <button class="add-button" onclick="addGlass()">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">Daily Goal (8 glasses)</span>
+                        <span class="progress-percentage" id="progressText">0%</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card" style="animation-delay: 0.2s;">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Statistics
+                </h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-icon">💧</span>
+                    <div class="stat-value" id="totalGlasses">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🔥</span>
+                    <div class="stat-value" id="streakDays">0</div>
+                    <div class="stat-label">Streak</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📊</span>
+                    <div class="stat-value" id="avgGlasses">0</div>
+                    <div class="stat-label">Average</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🏆</span>
+                    <div class="stat-value" id="bestDay">0</div>
+                    <div class="stat-label">Best Day</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Last 7 Days
+                </div>
+                <div class="chart-wrapper">
+                    <div class="bar-chart" id="weekChart"></div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">
+                    <i class="fas fa-calendar-week"></i>
+                    Last 30 Days Overview
+                </div>
+                <div class="chart-wrapper">
+                    <div class="bar-chart" id="monthChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card" style="animation-delay: 0.3s;">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-database"></i>
+                    Data Management
+                </h2>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn btn-export" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    <span>Export</span>
+                </button>
+                <div class="file-input-wrapper">
+                    <button class="action-btn btn-import">
+                        <i class="fas fa-upload"></i>
+                        <span>Import</span>
+                    </button>
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+                </div>
+                <button class="action-btn btn-clear" onclick="confirmClearAll()">
+                    <i class="fas fa-trash"></i>
+                    <span>Clear All</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-card" style="animation-delay: 0.4s;">
+            <div class="calendar-header">
+                <h2 class="calendar-title" id="calendarMonth"></h2>
+                <div class="calendar-nav">
+                    <button class="nav-btn" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="nav-btn" onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const DAILY_GOAL = 8;
+        let hydrationData = {};
+        let currentViewMonth = new Date();
+
+        function loadData() {
+            const saved = localStorage.getItem('hydrationData');
+            if (saved) {
+                try {
+                    hydrationData = JSON.parse(saved);
+                } catch (e) {
+                    showToast('Error loading data', 'Failed to parse saved data', 'error');
+                    hydrationData = {};
+                }
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('hydrationData', JSON.stringify(hydrationData));
+            } catch (e) {
+                showToast('Save Error', 'Failed to save data to storage', 'error');
+            }
+        }
+
+        function getTodayKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        function getDateKey(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function addGlass() {
+            const todayKey = getTodayKey();
+            if (!hydrationData[todayKey]) {
+                hydrationData[todayKey] = { count: 0, entries: [] };
+            }
+            hydrationData[todayKey].count++;
+            hydrationData[todayKey].entries.push(new Date().toISOString());
+            saveData();
+            updateDisplay();
+
+            const count = hydrationData[todayKey].count;
+            if (count === DAILY_GOAL) {
+                showToast('Goal Reached! 🎉', `Congratulations! You've reached your daily goal of ${DAILY_GOAL} glasses!`, 'success');
+            } else if (count === 1) {
+                showToast('Great Start! 💧', 'First glass of the day logged!', 'success');
+            } else {
+                showToast('Glass Added', `${count} glass${count > 1 ? 'es' : ''} today`, 'success');
+            }
+        }
+
+        function updateDisplay() {
+            const todayKey = getTodayKey();
+            const todayData = hydrationData[todayKey] || { count: 0, entries: [] };
+            const count = todayData.count;
+
+            document.getElementById('waterCount').textContent = count;
+
+            const progress = Math.min((count / DAILY_GOAL) * 100, 100);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${Math.round(progress)}%`;
+
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', options);
+
+            updateStatistics();
+            renderCharts();
+            renderCalendar();
+        }
+
+        function updateStatistics() {
+            const dates = Object.keys(hydrationData);
+            const totalGlasses = dates.reduce((sum, date) => sum + (hydrationData[date].count || 0), 0);
+
+            document.getElementById('totalGlasses').textContent = totalGlasses;
+
+            const streak = calculateStreak();
+            document.getElementById('streakDays').textContent = streak;
+
+            const avgGlasses = dates.length > 0 ? Math.round(totalGlasses / dates.length) : 0;
+            document.getElementById('avgGlasses').textContent = avgGlasses;
+
+            const bestDay = dates.length > 0 ? Math.max(...dates.map(date => hydrationData[date].count || 0)) : 0;
+            document.getElementById('bestDay').textContent = bestDay;
+        }
+
+        function calculateStreak() {
+            const today = new Date();
+            let streak = 0;
+            let currentDate = new Date(today);
+
+            while (true) {
+                const dateKey = getDateKey(currentDate);
+                const dayData = hydrationData[dateKey];
+
+                if (dayData && dayData.count >= DAILY_GOAL) {
+                    streak++;
+                    currentDate.setDate(currentDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            return streak;
+        }
+
+        function renderCharts() {
+            renderWeekChart();
+            renderMonthChart();
+        }
+
+        function renderWeekChart() {
+            const chartElement = document.getElementById('weekChart');
+            if (!chartElement) return;
+
+            const today = new Date();
+            let chartHTML = '';
+            const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            let maxValue = DAILY_GOAL;
+            const weekData = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateKey = getDateKey(date);
+                const count = hydrationData[dateKey] ? hydrationData[dateKey].count : 0;
+                weekData.push({ date, count, label: dayLabels[date.getDay()] });
+                if (count > maxValue) maxValue = count;
+            }
+
+            weekData.forEach(day => {
+                const heightPercent = maxValue > 0 ? Math.max((day.count / maxValue) * 100, 3) : 3;
+                const isToday = getDateKey(day.date) === getTodayKey();
+
+                chartHTML += `
+                    <div class="bar-item">
+                        <div class="bar-wrapper">
+                            <div class="bar" style="height: ${heightPercent}%;">
+                                ${day.count > 0 ? `<div class="bar-value">${day.count}</div>` : ''}
+                            </div>
+                            <div class="bar-label" style="${isToday ? 'color: #3B82F6; font-weight: 700;' : ''}">${day.label}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            chartElement.innerHTML = chartHTML;
+        }
+
+        function renderMonthChart() {
+            const chartElement = document.getElementById('monthChart');
+            if (!chartElement) return;
+
+            const today = new Date();
+            let chartHTML = '';
+
+            let maxValue = DAILY_GOAL;
+            const monthData = [];
+
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateKey = getDateKey(date);
+                const count = hydrationData[dateKey] ? hydrationData[dateKey].count : 0;
+                monthData.push({ date, count });
+                if (count > maxValue) maxValue = count;
+            }
+
+            monthData.forEach(day => {
+                const heightPercent = maxValue > 0 ? Math.max((day.count / maxValue) * 100, 3) : 3;
+                const dayNum = day.date.getDate();
+
+                chartHTML += `
+                    <div class="bar-item">
+                        <div class="bar-wrapper">
+                            <div class="bar" style="height: ${heightPercent}%;">
+                                ${day.count > 0 ? `<div class="bar-value">${day.count}</div>` : ''}
+                            </div>
+                            <div class="bar-label">${dayNum}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            chartElement.innerHTML = chartHTML;
+        }
+
+        function renderCalendar() {
+            const year = currentViewMonth.getFullYear();
+            const month = currentViewMonth.getMonth();
+
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const prevLastDay = new Date(year, month, 0);
+            const firstDayOfWeek = firstDay.getDay();
+            const lastDate = lastDay.getDate();
+            const prevLastDate = prevLastDay.getDate();
+
+            let calendarHTML = '';
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+            });
+
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const day = prevLastDate - i;
+                calendarHTML += `<div class="calendar-day other-month">
+                    <div class="calendar-day-number">${day}</div>
+                </div>`;
+            }
+
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayData = hydrationData[dateKey];
+                const isToday = isCurrentMonth && day === today.getDate();
+
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+                if (dayData && dayData.count > 0) {
+                    classes += ' has-data';
+                    if (dayData.count >= DAILY_GOAL) classes += ' goal-reached';
+                }
+
+                calendarHTML += `<div class="${classes}" onclick="showDayDetails('${dateKey}')">
+                    <div class="calendar-day-number">${day}</div>
+                    ${dayData ? `<div class="calendar-day-glasses"><i class="fas fa-tint"></i>${dayData.count}</div>` : ''}
+                </div>`;
+            }
+
+            const remainingDays = 7 - ((firstDayOfWeek + lastDate) % 7);
+            if (remainingDays < 7) {
+                for (let day = 1; day <= remainingDays; day++) {
+                    calendarHTML += `<div class="calendar-day other-month">
+                        <div class="calendar-day-number">${day}</div>
+                    </div>`;
+                }
+            }
+
+            document.getElementById('calendarGrid').innerHTML = calendarHTML;
+        }
+
+        function changeMonth(delta) {
+            currentViewMonth = new Date(currentViewMonth.getFullYear(), currentViewMonth.getMonth() + delta, 1);
+            renderCalendar();
+        }
+
+        function showDayDetails(dateKey) {
+            const dayData = hydrationData[dateKey];
+            if (!dayData || dayData.count === 0) {
+                showToast('No Data', 'No water logged for this day', 'warning');
+                return;
+            }
+
+            const date = new Date(dateKey);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('modalTitle').textContent = date.toLocaleDateString('en-US', options);
+            document.getElementById('modalSubtitle').textContent = `${dayData.count} glass${dayData.count > 1 ? 'es' : ''} logged`;
+
+            let entriesHTML = '';
+            if (dayData.entries && dayData.entries.length > 0) {
+                // Reverse the entries to show latest first
+                const reversedEntries = [...dayData.entries].reverse();
+                reversedEntries.forEach((timestamp, reversedIndex) => {
+                    const originalIndex = dayData.entries.length - 1 - reversedIndex;
+                    const entryTime = new Date(timestamp);
+                    const timeStr = entryTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const ago = getTimeAgo(entryTime);
+
+                    entriesHTML += `
+                        <div class="entry-item">
+                            <div class="entry-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="entry-details">
+                                <div class="entry-time">${timeStr}</div>
+                                <div class="entry-ago">${ago}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteEntry('${dateKey}', ${originalIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            } else {
+                entriesHTML = '<div class="empty-state"><i class="fas fa-droplet"></i><p>No detailed entries available</p></div>';
+            }
+
+            document.getElementById('modalBody').innerHTML = entriesHTML;
+            document.getElementById('entryModal').classList.add('active');
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+            if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            return 'Just now';
+        }
+
+        function deleteEntry(dateKey, entryIndex) {
+            if (!hydrationData[dateKey]) return;
+
+            hydrationData[dateKey].entries.splice(entryIndex, 1);
+            hydrationData[dateKey].count--;
+
+            if (hydrationData[dateKey].count === 0) {
+                delete hydrationData[dateKey];
+                closeEntryModal();
+            } else {
+                showDayDetails(dateKey);
+            }
+
+            saveData();
+            updateDisplay();
+            showToast('Entry Deleted', 'Water entry removed successfully', 'success');
+        }
+
+        function closeEntryModal() {
+            document.getElementById('entryModal').classList.remove('active');
+        }
+
+        function exportData() {
+            try {
+                const dataStr = JSON.stringify(hydrationData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `hydro-data-${getTodayKey()}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showToast('Export Successful', 'Your data has been exported', 'success');
+            } catch (e) {
+                showToast('Export Failed', 'Could not export data: ' + e.message, 'error');
+            }
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+
+                    if (typeof importedData !== 'object' || importedData === null) {
+                        throw new Error('Invalid data format');
+                    }
+
+                    hydrationData = { ...hydrationData, ...importedData };
+                    saveData();
+                    updateDisplay();
+                    showToast('Import Successful', 'Your data has been imported', 'success');
+                } catch (err) {
+                    showToast('Import Failed', 'Invalid file format: ' + err.message, 'error');
+                }
+            };
+            reader.onerror = function () {
+                showToast('Import Failed', 'Could not read file', 'error');
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function confirmClearAll() {
+            showConfirmModal(
+                'Clear All Data?',
+                'This will permanently delete all your hydration data. This action cannot be undone.',
+                'danger',
+                clearAllData
+            );
+        }
+
+        function clearAllData() {
+            try {
+                hydrationData = {};
+                saveData();
+                updateDisplay();
+                closeConfirmModal();
+                showToast('Data Cleared', 'All hydration data has been deleted', 'success');
+            } catch (e) {
+                showToast('Clear Failed', 'Could not clear data: ' + e.message, 'error');
+            }
+        }
+
+        function showConfirmModal(title, message, type, onConfirm) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+
+            const iconElement = document.getElementById('confirmIcon');
+            iconElement.className = 'confirm-icon ' + type;
+            iconElement.innerHTML = type === 'danger'
+                ? '<i class="fas fa-exclamation-circle"></i>'
+                : '<i class="fas fa-exclamation-triangle"></i>';
+
+            const confirmBtn = document.getElementById('confirmButton');
+            confirmBtn.onclick = onConfirm;
+
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function showToast(title, message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icons[type] || icons.success}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+            document.getElementById('toastContainer').appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.4s ease reverse';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeEntryModal();
+                closeConfirmModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeEntryModal();
+                closeConfirmModal();
+            }
+        });
+
+        loadData();
+        updateDisplay();
+    </script>
+</body>
+
+</html>
